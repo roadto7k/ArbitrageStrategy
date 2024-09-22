@@ -1,3 +1,13 @@
+#include <string>
+#include <map>
+#include <set>
+#include <vector>
+
+#include "IPriceSubscriber.h"
+#include "Http.h"
+#include "NetworkManager.h"
+#include "JsonParser.h"
+
 class MarketDataProvider {
 public:
     static MarketDataProvider& getInstance() {
@@ -5,20 +15,17 @@ public:
         return instance;
     }
 
-    void subscribe(const std::string& symbol, IPriceSubscriber* subscriber) {
+    void subscribe(const std::string& symbol, IPriceSubscriber* subscriber, IExchangeAPI* exchangeApi) {
         subscribers[symbol].push_back(subscriber);
         
-        if (websocketSubscriptions.find(symbol) == websocketSubscriptions.end()) {
-            startWebSocketSubscription(symbol);
+        if (exchangeApi->supportsWebSocket()) {
+            exchangeApi->subscribeToWebSocket(symbol, this);
+        } else {
+            startHttpPolling(symbol, exchangeApi);
         }
     }
 
-    void updatePrice(const std::string& symbol) {
-        HttpRequest request{"https://api.exchange.com/v1/ticker/price?symbol=" + symbol, {}, "", "GET"};
-        
-        HttpResponse response = networkManager.makeHttpRequest(request);
-        
-        float price = JsonParser::parse(response.body)["price"].get<float>();
+    void onPriceUpdate(const std::string& symbol, float price) {
         prices[symbol] = price;
         notifySubscribers(symbol, price);
     }
@@ -27,29 +34,25 @@ public:
         return prices[symbol];
     }
 
-    void startWebSocketSubscription(const std::string& symbol) {
-        networkManager.connectWebSocket(symbol, this);
-        websocketSubscriptions.insert(symbol);
-    }
-
-    void onMessageReceived(const std::string& symbol, const std::string& message) {
-        float price = JsonParser::parse(message)["price"].get<float>();
-        
-        prices[symbol] = price;
-        notifySubscribers(symbol, price);
-    }
-
 private:
-    MarketDataProvider() : networkManager(NetworkManager::getInstance()) {}
+    MarketDataProvider() {}
 
-    std::map<std::string, float> prices; 
-    std::map<std::string, std::vector<IPriceSubscriber*>> subscribers; 
-    std::set<std::string> websocketSubscriptions;
-    NetworkManager& networkManager;
+    std::map<std::string, float> prices;
+    std::map<std::string, std::vector<IPriceSubscriber*>> subscribers;
 
     void notifySubscribers(const std::string& symbol, float price) {
         for (auto subscriber : subscribers[symbol]) {
             subscriber->onPriceUpdate(symbol, price);
         }
+    }
+
+    void startHttpPolling(const std::string& symbol, IExchangeAPI* exchangeApi) {
+        std::thread([this, symbol, exchangeApi]() {
+            while (true) {
+                float price = exchangeApi->getPrice(symbol); 
+                this->onPriceUpdate(symbol, price);  
+                std::this_thread::sleep_for(std::chrono::seconds(10)); 
+            }
+        }).detach();
     }
 };

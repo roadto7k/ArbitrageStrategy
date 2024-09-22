@@ -10,5 +10,21 @@ add_subdirectory(configured)
 
 option(ENABLE_TESTS "Enable building of tests" OFF)
 
+find_package(CURL REQUIRED)
+
+include(FetchContent)
+FetchContent_Declare(
+    json
+    URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.hpp
+)
+FetchContent_MakeAvailable(json)
+
+add_subdirectory(src)
 if (ENABLE_TESTS)
     add_subdirectory(test)
+
+if (WIN32)
+    message(STATUS "Compiling on Windows")
+elseif(UNIX)
+    message(STATUS "Compiling on Linux")
+endif()

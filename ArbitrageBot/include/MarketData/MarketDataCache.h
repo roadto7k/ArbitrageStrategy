@@ -1,3 +1,7 @@
+#include <string>
+#include <map>
+#include <stdexcept>
+
 class MarketDataCache {
 public:
     void storePrice(const std::string& symbol, float price) {
