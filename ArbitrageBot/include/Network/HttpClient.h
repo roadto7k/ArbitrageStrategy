@@ -1,22 +1,31 @@
 #include "Http.h"
+#include <curl/curl.h>
 
 class HttpClient {
 public:
+    virtual HttpResponse sendRequest(const HttpRequest& request) = 0;
 
-    virtual HttpResponse sendGetRequest(const std::string& url, const std::map<std::string, std::string>& headers) = 0;
-    virtual HttpResponse sendPostRequest(const std::string& url, const std::map<std::string, std::string>& headers, const std::string& body) = 0;
+    virtual void setTimeout(int milliseconds) = 0;
+
+    virtual void setRetryPolicy(int retries) = 0;
 
     virtual ~HttpClient() = default;
 };
 
 class CurlHttpClient : public HttpClient {
 public:
-    CurlHttpClient();  // Initialisation de libcurl
-    ~CurlHttpClient(); // Nettoyage de libcurl
+    CurlHttpClient();
+    ~CurlHttpClient();
 
-    HttpResponse sendGetRequest(const std::string& url, const std::map<std::string, std::string>& headers) override;
-    HttpResponse sendPostRequest(const std::string& url, const std::map<std::string, std::string>& headers, const std::string& body) override;
+    HttpResponse sendRequest(const HttpRequest& request) override;
+
+    void setTimeout(int milliseconds) override;
+    void setRetryPolicy(int retries) override;
 
 private:
-    // Gestion interne de libcurl (par exemple CURL handle)
+    CURL* curlHandle;
+    int timeout;
+    int retryCount;
+
+    HttpResponse processCurlResponse(CURLcode curlCode, const std::string& responseData);
 };
