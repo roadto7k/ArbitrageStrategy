@@ -1,11 +1,12 @@
 #include <memory>
 #include <string>
-#include "WebSockerClient.h"
+#include <iostream>
+#include "IWebSocketClient.h"
 #include "HttpClient.h"
 
 class NetworkManager {
 public:
-    NetworkManager(std::unique_ptr<HttpClient> httpClient, std::unique_ptr<WebSocketClient> webSocketClient);
+    NetworkManager(std::unique_ptr<HttpClient> httpClient, std::unique_ptr<IWebSocketClient> webSocketClient);
 
     HttpResponse makeHttpRequest(const HttpRequest& request);
 
@@ -17,5 +18,5 @@ public:
 
 private:
     std::unique_ptr<HttpClient> httpClient; 
-    std::unique_ptr<WebSocketClient> webSocketClient;
+    std::unique_ptr<IWebSocketClient> webSocketClient;
 };
