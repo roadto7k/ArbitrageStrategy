@@ -61,12 +61,15 @@ if (WIN32)
         message(STATUS "Boost est déjà installé.")
     endif()
 
-    set(CMAKE_PREFIX_PATH "${VCPKG_DIR}/installed/x64-windows" CACHE STRING "Path to vcpkg installed libraries")
     set(CMAKE_PREFIX_PATH "${VCPKG_DIR}/installed/x64-windows-static" CACHE STRING "Path to static vcpkg installed libraries")
+    set(CMAKE_PREFIX_PATH "${VCPKG_DIR}/installed/x64-windows" CACHE STRING "Path to vcpkg installed libraries")
+    # set(CMAKE_PREFIX_PATH "${VCPKG_DIR}/installed/x64-windows/debug" CACHE STRING "Path to vcpkg installed debug libraries")
 
 endif()
 
-find_package(CURL REQUIRED)
+# set(CURL_STATICLIB ON)
+
+# find_package(CURL REQUIRED)
 
 include(FetchContent)
 FetchContent_Declare(

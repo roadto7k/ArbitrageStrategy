@@ -1,3 +1,4 @@
+#pragma once
 #include "Http.h"
 #include <curl/curl.h>
 

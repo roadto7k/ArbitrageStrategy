@@ -84,12 +84,40 @@ if (WIN32)
 else()
     target_include_directories(NetworkLib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include/Network)
 endif()
+# set(CURL_STATICLIB ON)
+
+# set(CURL_ROOT "${CMAKE_SOURCE_DIR}/vcpkg/installed/x64-windows/debug")
+# set(CURL_INCLUDEDIR "${CURL_ROOT}/include")
+# set(CURL_LIBRARYDIR "${CURL_ROOT}/lib")
+
+
+
 find_package(CURL REQUIRED)
 
-target_link_libraries(NetworkLib PRIVATE CURL::libcurl)
+message(STATUS "CURL include dirs: ${CURL_INCLUDE_DIRS}")
+message(STATUS "CURL libraries: ${CURL_LIBRARIES}")
+# set(CURL_STATICLIB ON)
 
+# set(CURL_ROOT "${CMAKE_SOURCE_DIR}/vcpkg/installed/x64-windows-static")
+# set(CURL_INCLUDEDIR "${CURL_ROOT}/include")
+# set(CURL_LIBRARYDIR "${CURL_ROOT}/lib")
+target_link_libraries(NetworkLib PUBLIC CURL::libcurl)
+if (WIN32)
+    set(CURL_HEADER_PATH "${VCPKG_DIR}/installed/x64-windows/include")
+endif()
 
+message(STATUS "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHHHHHHHHHH")
+message(STATUS ${CURL_INCLUDE_DIRS})
+message(STATUS ${CURL_LIBRARIES})
+target_include_directories(NetworkLib PUBLIC ${CURL_HEADER_PATH})
 
 
 add_executable(TEST main.cpp)
 target_link_libraries(TEST NetworkLib)
+
+if (WIN32 AND NOT CURL_STATICLIB)
+    add_custom_command(TARGET TEST POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${VCPKG_DIR}/installed/x64-windows/bin/libcurl-d.dll"
+        $<TARGET_FILE_DIR:TEST>)
+endif()
