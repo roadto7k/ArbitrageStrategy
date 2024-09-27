@@ -17,14 +17,14 @@ public:
 
 int main() {
     try {
-        // Création des objets HttpClient et WebSocketClient
+        std::cout << "Client creation" << std::endl;
         auto httpClient = std::make_unique<CurlHttpClient>();
         auto webSocketClient = std::make_unique<WebSocketClientWebSocketPP>("wss://ws.ifelse.io");
 
-        // Création du NetworkManager avec les clients
+        std::cout << "Manager creation" << std::endl;
         NetworkManager networkManager(std::move(httpClient), std::move(webSocketClient));
 
-        // Tester une requête HTTP GET vers httpbin.org
+        std::cout << "Test get request";
         HttpRequest httpRequest;
         httpRequest.url = "https://httpbin.org/get";
         httpRequest.method = "GET";
@@ -32,7 +32,7 @@ int main() {
         HttpResponse httpResponse = networkManager.makeHttpRequest(httpRequest);
         std::cout << "HTTP GET Response: " << httpResponse.statusCode << " " << httpResponse.body << std::endl;
 
-        // Tester une requête HTTP POST vers httpbin.org
+        std::cout << "Test post request : " << std::endl;
         HttpRequest postRequest;
         postRequest.url = "https://httpbin.org/post";
         postRequest.method = "POST";
@@ -42,22 +42,24 @@ int main() {
         HttpResponse postResponse = networkManager.makeHttpRequest(postRequest);
         std::cout << "HTTP POST Response: " << postResponse.statusCode << " " << postResponse.body << std::endl;
 
-        // Configuration du timeout HTTP
-        networkManager.setHttpTimeout(5000); // Timeout à 5 secondes
+        std::cout << "http timout" << std::endl;
+        networkManager.setHttpTimeout(5000);
 
-        // Configuration du retry policy HTTP
-        networkManager.setHttpRetryPolicy(3); // 3 tentatives en cas d'échec
+        std::cout << "Retry policy" << std::endl;
+        networkManager.setHttpRetryPolicy(3);
 
-        // Connexion WebSocket et envoi de messages
+        std::cout << "websocket creation" << std::endl;
         TestWebSocketObserver wsObserver;
         networkManager.connectWebSocket("test-symbol", &wsObserver);
 
-        std::this_thread::sleep_for(std::chrono::seconds(1));  // Attendre un moment que la connexion WebSocket se fasse
+        std::this_thread::sleep_for(std::chrono::seconds(1));
 
-        // Envoyer un message sur WebSocket
-        networkManager.setWebSocketReconnectPolicy(true); // Option auto-reconnect activée
+ 
+        networkManager.setWebSocketReconnectPolicy(true);
 
-        std::this_thread::sleep_for(std::chrono::seconds(10));  // Garder la connexion ouverte un peu plus longtemps
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+        int a;
+        std::cin >> a;
     }
     catch (const std::exception& e) {
         std::cerr << "Exception: " << e.what() << std::endl;

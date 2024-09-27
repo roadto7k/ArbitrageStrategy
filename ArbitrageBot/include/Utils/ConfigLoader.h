@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "JsonParser.hpp"
+#include "JsonParser.h"
 #include <fstream>
 
 class ConfigLoader {

@@ -7,21 +7,21 @@
 #include "Http.h"
 #include "NetworkManager.h"
 #include "JsonParser.h"
+#include "IAPI.h"
 
-class MarketDataProvider {
+class MarketDataProvider : public IPriceSubscriber {
 public:
     static MarketDataProvider& getInstance() {
         static MarketDataProvider instance;
         return instance;
     }
 
-    void subscribe(const std::string& symbol, IPriceSubscriber* subscriber, IExchangeAPI* exchangeApi) {
+    void subscribe(const std::string& symbol, IPriceSubscriber* subscriber, IAPI* api) {
         subscribers[symbol].push_back(subscriber);
-        
-        if (exchangeApi->supportsWebSocket()) {
-            exchangeApi->subscribeToWebSocket(symbol, this);
+        if (api->supportsWebSocket()) {
+            api->subscribeToWebSocket(symbol, this);
         } else {
-            startHttpPolling(symbol, exchangeApi);
+            startHttpPolling(symbol, api);
         }
     }
 
@@ -46,10 +46,10 @@ private:
         }
     }
 
-    void startHttpPolling(const std::string& symbol, IExchangeAPI* exchangeApi) {
-        std::thread([this, symbol, exchangeApi]() {
+    void startHttpPolling(const std::string& symbol, IAPI* api) {
+        std::thread([this, symbol, api]() {
             while (true) {
-                float price = exchangeApi->getPrice(symbol); 
+                float price = api->getPrice(symbol); 
                 this->onPriceUpdate(symbol, price);  
                 std::this_thread::sleep_for(std::chrono::seconds(10)); 
             }

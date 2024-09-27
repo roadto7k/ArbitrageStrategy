@@ -16,4 +16,6 @@ struct HttpResponse {
     std::string body;  
     std::map<std::string, std::string> headers;
     std::string errorMessage;
+
+    std::string getBody() {return this->body;}
 };

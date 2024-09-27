@@ -1,7 +1,7 @@
 #include "BinanceAPI.h"
 #include "JsonParser.h"
 
-BinanceAPI::BinanceAPI(NetworkManager& networkManager) : networkManager(networkManager) {}
+// BinanceAPI::BinanceAPI(NetworkManager& networkManager) : networkManager(networkManager) {}
 
 std::string BinanceAPI::buildUrl(const std::string& endpoint) const {
     return "https://api.binance.com" + endpoint; 
@@ -9,7 +9,7 @@ std::string BinanceAPI::buildUrl(const std::string& endpoint) const {
 
 float BinanceAPI::getPrice(const std::string& symbol) {
     std::string url = buildUrl("/api/v3/ticker/price?symbol=" + symbol);
-    HttpResponse response = networkManager.sendRequest(HttpRequest(url));
+    HttpResponse response = networkManager.makeHttpRequest(HttpRequest(url));
 
     nlohmann::json jsonResponse = JsonParser::parse(response.getBody());
     return JsonParser::getValue<float>(jsonResponse, "price");
@@ -25,5 +25,5 @@ void BinanceAPI::sendOrder(const Order& order) {
         {"type", order.getType() == Order::Type::Market ? "MARKET" : "LIMIT"}
     };
 
-    HttpResponse response = networkManager.sendRequest(HttpRequest(url, "POST", JsonParser::toJsonString(orderJson)));
+    HttpResponse response = networkManager.makeHttpRequest(HttpRequest(url, "POST", JsonParser::toJsonString(orderJson)));
 }
