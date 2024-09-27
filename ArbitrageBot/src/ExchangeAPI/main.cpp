@@ -13,10 +13,8 @@ public:
 };
 
 int main() {
-    // Créer un NetworkManager (qui gérera les requêtes HTTP)
     NetworkManager networkManager;
 
-    // Créer une instance de l'API d'échange (ici, Binance)
     std::unique_ptr<IExchangeAPI> exchange = ExchangeFactory::createExchange("Binance", networkManager);
 
     if (!exchange) {
@@ -24,7 +22,6 @@ int main() {
         return 1;
     }
 
-    // Exemple : obtenir le prix d'une crypto
     std::string symbol = "BTCUSDT";
     try {
         float price = exchange->getPrice(symbol);
@@ -33,8 +30,7 @@ int main() {
         std::cerr << "Failed to get price: " << e.what() << std::endl;
     }
 
-    // Exemple : envoyer un ordre
-    Order order(symbol, 0.1f, price, Order::Type::Market); // Acheter 0.1 BTC au prix actuel
+    Order order(symbol, 0.1f, price, Order::Type::Market);
     try {
         exchange->sendOrder(order);
         std::cout << "Order placed successfully!" << std::endl;
@@ -42,7 +38,6 @@ int main() {
         std::cerr << "Failed to send order: " << e.what() << std::endl;
     }
 
-    // Exemple : abonnement WebSocket
     MockMarketDataProvider provider;
     if (exchange->supportsWebSocket()) {
         exchange->subscribeToWebSocket(symbol, &provider);
