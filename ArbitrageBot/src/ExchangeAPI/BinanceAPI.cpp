@@ -24,6 +24,6 @@ void BinanceAPI::sendOrder(const Order& order) {
         {"price", order.getPrice()},
         {"type", order.getType() == Order::Type::Market ? "MARKET" : "LIMIT"}
     };
-
-    HttpResponse response = networkManager.makeHttpRequest(HttpRequest(url, "POST", JsonParser::toJsonString(orderJson)));
+    HttpRequest request(url, {}, JsonParser::toJsonString(orderJson), "POST"); 
+    HttpResponse response = networkManager.makeHttpRequest(request);
 }

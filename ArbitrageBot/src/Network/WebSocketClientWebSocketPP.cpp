@@ -1,6 +1,14 @@
-#include "WebSocketClientWebSocketPP.h"
+
 #include <iostream>
 #include <thread>
+#include <memory>
+#include "WebSocketClientWebSocketPP.h"
+#include <websocketpp/config/asio_client.hpp>
+// #include <websocketpp/config/asio_tls_client.hpp>
+#include <websocketpp/client.hpp>
+#include <websocketpp/config/asio.hpp>
+#include <boost/asio/ssl/context.hpp>
+#include <boost/asio/ssl.hpp>
 
 WebSocketClientWebSocketPP::WebSocketClientWebSocketPP(const std::string& uri) 
     : uri(uri), isConnected(false) {
@@ -18,6 +26,14 @@ WebSocketClientWebSocketPP::~WebSocketClientWebSocketPP() {
 void WebSocketClientWebSocketPP::connect() {
     websocketpp::lib::error_code ec;
     Client::connection_ptr con = client.get_connection(uri, ec);
+
+    if (uri.substr(0, 6) == "wss://") {
+        client.set_tls_init_handler([](websocketpp::connection_hdl) {
+            auto ctx = std::make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tlsv12);
+            // ctx->set_verify_mode(boost::asio::ssl::verify_none); // Désactiver la vérification des certificats
+            return ctx;
+        });
+    }
 
     if (ec) {
         std::cerr << "Error creating connection: " << ec.message() << std::endl;

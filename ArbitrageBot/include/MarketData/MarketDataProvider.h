@@ -1,15 +1,16 @@
+#pragma once
 #include <string>
 #include <map>
 #include <set>
 #include <vector>
 
-#include "IPriceSubscriber.h"
+#include "IMarketDataProvider.h"
 #include "Http.h"
 #include "NetworkManager.h"
 #include "JsonParser.h"
 #include "IAPI.h"
 
-class MarketDataProvider : public IPriceSubscriber {
+class MarketDataProvider : public IMarketDataProvider {
 public:
     static MarketDataProvider& getInstance() {
         static MarketDataProvider instance;

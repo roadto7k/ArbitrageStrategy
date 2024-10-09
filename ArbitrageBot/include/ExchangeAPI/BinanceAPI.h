@@ -3,17 +3,14 @@
 #include "IExchangeAPI.h"
 #include "NetworkManager.h"
 #include "JsonParser.h"
+#include "WebSocketPriceObserver.h"
 
 class BinanceAPI : public IExchangeAPI {
 public:
     BinanceAPI(NetworkManager& networkManager) : networkManager(networkManager) {}
 
     float getPrice(const std::string& symbol) override;
-    // {
-    //     std::string url = "https://api.binance.com/api/v3/ticker/price?symbol=" + symbol;
-    //     HttpResponse response = networkManager.makeHttpRequest(HttpRequest(url));
-    //     return JsonParser::parse(response.getBody())["price"].get<float>();
-    // }
+
 
     bool supportsWebSocket() const override {
         return true;  // Binance supporte WebSocket
@@ -21,15 +18,14 @@ public:
 
     void sendOrder(const Order& order) override;
 
-    void subscribeToWebSocket(const std::string& symbol, IPriceSubscriber* provider) override {
-        networkManager.connectWebSocket(symbol, [provider, symbol](const std::string& message) {
-            float price = JsonParser::parse(message)["price"].get<float>();
-            provider->onPriceUpdate(symbol, price);
-        });
+    void subscribeToWebSocket(const std::string& symbol, IPriceSubscriber* provider) {
+        auto observer = std::make_unique<WebSocketPriceObserver>(symbol, provider);
+        networkManager.connectWebSocket(symbol, observer.get());
+        observers.push_back(std::move(observer));
     }
 
 private:
     NetworkManager& networkManager;
-
+    std::vector<std::unique_ptr<WebSocketPriceObserver>> observers;
     std::string buildUrl(const std::string& endpoint) const;
 };

@@ -2,13 +2,23 @@
 #include <memory>
 #include "ExchangeFactory.h"
 #include "MockExchangeAPI.h"
+#include "IMarketDataProvider.h"
 #include "NetworkManager.h"
 #include "Order.h"
 
-class MockMarketDataProvider : public MarketDataProvider {
+class MockMarketDataProvider : public IMarketDataProvider {
 public:
+    void subscribe(const std::string& symbol, IPriceSubscriber* subscriber, IAPI* api) override {
+        std::cout << "Mock subscribe called for symbol: " << symbol << std::endl;
+    }
+
     void onPriceUpdate(const std::string& symbol, float price) override {
-        std::cout << "Price update for " << symbol << ": " << price << std::endl;
+        std::cout << "Mock price update for " << symbol << ": " << price << std::endl;
+    }
+
+    float getPrice(const std::string& symbol) override {
+        std::cout << "Mock getPrice called for symbol: " << symbol << std::endl;
+        return 123.45f; 
     }
 };
 
@@ -21,10 +31,10 @@ int main() {
         std::cerr << "Error: Unsupported exchange type!" << std::endl;
         return 1;
     }
-
+    float price = 0;
     std::string symbol = "BTCUSDT";
     try {
-        float price = exchange->getPrice(symbol);
+        price = exchange->getPrice(symbol);
         std::cout << "The price of " << symbol << " is " << price << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Failed to get price: " << e.what() << std::endl;
@@ -43,6 +53,14 @@ int main() {
         exchange->subscribeToWebSocket(symbol, &provider);
         std::cout << "Subscribed to WebSocket for " << symbol << std::endl;
     }
+    int a;
+    std::cin >> a;
+
+
 
     return 0;
 }
+
+
+
+

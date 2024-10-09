@@ -44,14 +44,19 @@ if (WIN32)
         COMMAND ${VCPKG_DIR}/vcpkg install curl
         RESULT_VARIABLE VCPKG_CURL_RESULT
     )
+
+    execute_process(
+        COMMAND ${VCPKG_DIR}/vcpkg install openssl
+        RESULT_VARIABLE VCPKG_OpenSSL_RESULT
+    )
     if (NOT VCPKG_CURL_RESULT EQUAL 0)
         message(FATAL_ERROR "L'installation de libcurl via vcpkg a échoué.")
     endif()
 
-    if (NOT EXISTS "${VCPKG_DIR}/installed/x64-windows-static/include/boost")
+    if (NOT EXISTS "${VCPKG_DIR}/installed/x64-windows/include/boost")
         message(STATUS "Installation de Boost...")
         execute_process(
-            COMMAND ${VCPKG_DIR}/vcpkg install boost:x64-windows-static
+            COMMAND ${VCPKG_DIR}/vcpkg install boost:x64-windows
             RESULT_VARIABLE VCPKG_BOOST_RESULT
         )
         if (NOT VCPKG_BOOST_RESULT EQUAL 0)

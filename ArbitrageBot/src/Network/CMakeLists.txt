@@ -22,17 +22,17 @@ if (WIN32)
     set(CMAKE_TOOLCHAIN_FILE ${VCKPG_CMAKE} CACHE STRING "VCPKG toolchain file")
 endif()
 
-set(Boost_USE_STATIC_LIBS ON)
-set(Boost_USE_MULTITHREADED ON)
+# set(Boost_USE_STATIC_LIBS ON)
+# set(Boost_USE_MULTITHREADED ON)
 # set(Boost_USE_STATIC_RUNTIME OFF)
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+# set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-set(BOOST_ROOT "${CMAKE_SOURCE_DIR}/vcpkg/installed/x64-windows-static")
+set(BOOST_ROOT "${CMAKE_SOURCE_DIR}/vcpkg/installed/x64-windows")
 set(BOOST_INCLUDEDIR "${BOOST_ROOT}/include")
 set(BOOST_LIBRARYDIR "${BOOST_ROOT}/lib")
 
 find_package(Boost REQUIRED COMPONENTS filesystem system thread regex random)
-
+find_package(OpenSSL REQUIRED)
 
 FetchContent_Declare(
     websocketpp
@@ -41,22 +41,18 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(websocketpp)
 
-# Chemin vers le dossier de source de websocketpp
 set(WEBSOCKETPP_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/websocketpp-src")
 
-# Configuration de websocketpp
 execute_process(
     COMMAND ${CMAKE_COMMAND} .
     WORKING_DIRECTORY ${WEBSOCKETPP_SOURCE_DIR}
 )
 
-# Construction de websocketpp
 execute_process(
     COMMAND ${CMAKE_COMMAND} --build .
     WORKING_DIRECTORY ${WEBSOCKETPP_SOURCE_DIR}
 )
 
-# Installation de websocketpp
 execute_process(
     COMMAND ${CMAKE_COMMAND} --install .
     WORKING_DIRECTORY ${WEBSOCKETPP_SOURCE_DIR}
@@ -71,8 +67,12 @@ add_library(NetworkLib STATIC
             CurlHttpClient.cpp
             WebSocketClientWebSocketPP.cpp)
 set(boost_dir "${Boost_INCLUDE_DIRS}/boost")
-target_include_directories(NetworkLib PUBLIC ${boost_dir})
-target_link_libraries(NetworkLib PUBLIC Boost::system Boost::thread Boost::regex Boost::random)
+set(open_ssl_dir "${Boost_INCLUDE_DIRS}/openssl")
+message(STATUS "BIIIIIIITE")
+message(STATUS ${open_ssl_dir})
+target_include_directories(NetworkLib PUBLIC ${boost_dir} ${open_ssl_dir})
+target_link_directories(NetworkLib PUBLIC ${open_ssl_dir})
+target_link_libraries(NetworkLib PUBLIC Boost::system Boost::thread Boost::regex Boost::random OpenSSL::SSL OpenSSL::Crypto)
 set(WEBSOCKETPP_INCLUDE_DIR "${websocketpp_SOURCE_DIR}/install/include")
 target_include_directories(NetworkLib PUBLIC ${WEBSOCKETPP_INCLUDE_DIR})
 target_include_directories(NetworkLib PRIVATE ${websocketpp_SOURCE_DIR}install/include/websocketpp)
@@ -119,5 +119,12 @@ if (WIN32 AND NOT CURL_STATICLIB)
     add_custom_command(TARGET TEST POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${VCPKG_DIR}/installed/x64-windows/bin/libcurl-d.dll"
+        $<TARGET_FILE_DIR:TEST>)
+endif()
+
+if (WIN32)
+    add_custom_command(TARGET TEST POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${VCPKG_DIR}/installed/x64-windows/debug/bin/boost_random-vc143-mt-gd-x64-1_85.dll"
         $<TARGET_FILE_DIR:TEST>)
 endif()

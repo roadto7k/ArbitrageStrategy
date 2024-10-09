@@ -50,6 +50,7 @@ int main() {
 
         std::cout << "websocket creation" << std::endl;
         TestWebSocketObserver wsObserver;
+        std::cout << "websocket connexion" << std::endl;
         networkManager.connectWebSocket("test-symbol", &wsObserver);
 
         std::this_thread::sleep_for(std::chrono::seconds(1));
