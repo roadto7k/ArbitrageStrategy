@@ -1,6 +1,6 @@
 add_subdirectory(Utils)
 add_subdirectory(Network)
-add_subdirectory(MarketData)
 add_subdirectory(ExchangeAPI)
+add_subdirectory(MarketData)
 add_subdirectory(ArbitrageEngine)
 add_subdirectory(Strategy)

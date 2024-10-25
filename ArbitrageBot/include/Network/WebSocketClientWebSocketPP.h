@@ -5,6 +5,7 @@
 #include "IWebSocketClient.h"
 #include <websocketpp/client.hpp>
 #include "websocketpp/config/asio_client.hpp"
+#include <boost/asio/ssl/context.hpp>
 #include <vector>
 #include <string>
 #include <memory>
@@ -40,6 +41,8 @@ private:
 
     void notifyObservers(const std::string& message);
     void notifyConnectionClosed();
+
+    std::shared_ptr<boost::asio::ssl::context> onTlsInit(websocketpp::connection_hdl hdl);
 };
 
 #endif

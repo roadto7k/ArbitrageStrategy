@@ -22,10 +22,13 @@ if (NOT TARGET NetworkLib)
     add_subdirectory(../Network NetworkLib)
 endif()
 
+if (NOT TARGET ExchangeAPILib)
+    add_subdirectory(../ExchangeAPI ExchangeAPILib)
+endif()
 add_library(MarketDataLib INTERFACE)
 
 target_include_directories(MarketDataLib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../../include/MarketData)
-target_link_libraries(MarketDataLib INTERFACE UtilsLib NetworkLib CommonLib ConfiguredModule)
+target_link_libraries(MarketDataLib INTERFACE ExchangeAPILib UtilsLib NetworkLib CommonLib ConfiguredModule)
 
 add_executable(TEST_MARKETDATA main.cpp)
 

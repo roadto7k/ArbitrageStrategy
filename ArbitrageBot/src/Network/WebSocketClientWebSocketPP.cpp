@@ -14,6 +14,10 @@ WebSocketClientWebSocketPP::WebSocketClientWebSocketPP(const std::string& uri)
     : uri(uri), isConnected(false) {
     // Initialize websocketpp client
     client.init_asio();
+    if (uri.substr(0, 6) == "wss://") {
+        client.set_tls_init_handler(std::bind(&WebSocketClientWebSocketPP::onTlsInit, this, std::placeholders::_1));
+    }
+
     client.set_open_handler([this](websocketpp::connection_hdl hdl) { onOpen(hdl); });
     client.set_close_handler([this](websocketpp::connection_hdl hdl) { onClose(hdl); });
     client.set_message_handler([this](websocketpp::connection_hdl hdl, Client::message_ptr msg) { onMessage(hdl, msg); });
@@ -26,14 +30,6 @@ WebSocketClientWebSocketPP::~WebSocketClientWebSocketPP() {
 void WebSocketClientWebSocketPP::connect() {
     websocketpp::lib::error_code ec;
     Client::connection_ptr con = client.get_connection(uri, ec);
-
-    if (uri.substr(0, 6) == "wss://") {
-        client.set_tls_init_handler([](websocketpp::connection_hdl) {
-            auto ctx = std::make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tlsv12);
-            // ctx->set_verify_mode(boost::asio::ssl::verify_none); // Désactiver la vérification des certificats
-            return ctx;
-        });
-    }
 
     if (ec) {
         std::cerr << "Error creating connection: " << ec.message() << std::endl;
@@ -112,4 +108,31 @@ void WebSocketClientWebSocketPP::notifyConnectionClosed() {
             observer->onConnectionClosed();
         }
     }
+}
+
+std::shared_ptr<boost::asio::ssl::context> WebSocketClientWebSocketPP::onTlsInit(websocketpp::connection_hdl hdl) {
+    auto ctx = std::make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tlsv12);
+
+    try {
+        ctx->set_options(boost::asio::ssl::context::default_workarounds |
+                         boost::asio::ssl::context::no_sslv2 |
+                         boost::asio::ssl::context::no_sslv3 |
+                         boost::asio::ssl::context::single_dh_use);
+
+        // Option 1: Utiliser les chemins par défaut pour les certificats
+        // ctx->set_default_verify_paths();
+
+        // Option 2: Spécifier un fichier de certificats manuellement (à utiliser si l'option 1 échoue)
+        // ctx->load_verify_file("/path/to/certificates.pem");
+
+        // Désactiver la vérification des certificats pour le test (non recommandé en production)
+        // ctx->set_verify_mode(boost::asio::ssl::verify_none);
+
+        ctx->set_verify_mode(boost::asio::ssl::verify_peer);
+
+    } catch (std::exception& e) {
+        std::cerr << "Error in TLS initialization: " << e.what() << std::endl;
+    }
+
+    return ctx;
 }

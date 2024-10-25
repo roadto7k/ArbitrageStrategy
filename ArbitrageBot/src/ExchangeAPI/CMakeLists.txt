@@ -18,16 +18,16 @@ if (NOT TARGET NetworkLib)
     add_subdirectory(../Network NetworkLib)
 endif()
 
-if (NOT TARGET MarketDataLib)
-    add_subdirectory(../MarketData MarketDataLib)
-endif()
+# if (NOT TARGET MarketDataLib)
+#     add_subdirectory(../MarketData MarketDataLib)
+# endif()
 
 add_library(ExchangeAPILib STATIC
             BinanceAPI.cpp
             )
 
 target_include_directories(ExchangeAPILib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../../include/ExchangeAPI)
-target_link_libraries(ExchangeAPILib MarketDataLib NetworkLib UtilsLib nlohmann_json::nlohmann_json)
+target_link_libraries(ExchangeAPILib NetworkLib UtilsLib nlohmann_json::nlohmann_json)
 
 add_executable(TEST_EXCHANGE main.cpp)
 
