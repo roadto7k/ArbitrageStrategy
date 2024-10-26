@@ -111,8 +111,8 @@ void WebSocketClientWebSocketPP::notifyConnectionClosed() {
 }
 
 std::shared_ptr<boost::asio::ssl::context> WebSocketClientWebSocketPP::onTlsInit(websocketpp::connection_hdl hdl) {
-    auto ctx = std::make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tlsv12);
-
+    // auto ctx = std::make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tlsv12);
+    auto ctx = websocketpp::lib::make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tlsv12);
     try {
         ctx->set_options(boost::asio::ssl::context::default_workarounds |
                          boost::asio::ssl::context::no_sslv2 |

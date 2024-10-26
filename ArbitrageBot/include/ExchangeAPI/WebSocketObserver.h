@@ -10,9 +10,19 @@ public:
         : symbol(symbol), provider(provider) {}
 
     void onMessageReceived(const std::string& message) override {
-        auto json = JsonParser::parse(message);
-        float price = JsonParser::getValue<float>(json, "p", 0.0f); 
-        provider->onPriceUpdate(symbol, price);
+        try {
+            auto json = JsonParser::parse(message);
+
+            if (json.contains("stream") && json.contains("data")) {
+                auto data = json["data"];
+                processMessage(data);
+            }
+            else {
+                processMessage(json);
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "Error parsing JSON message: " << e.what() << std::endl;
+        }
     }
 
     void onConnectionClosed() override {
@@ -22,4 +32,13 @@ public:
 private:
     std::string symbol;
     IPriceSubscriber* provider;
+
+    void processMessage(const nlohmann::json& json) {
+        if (json.contains("p")) {
+            float price = JsonParser::getValue<float>(json, "p", 0.0f);
+            provider->onPriceUpdate(symbol, price);
+        } else {
+            std::cerr << "Price field 'p' not found in the message." << std::endl;
+        }
+    }
 };
