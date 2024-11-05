@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include "Http.h"
 #include "HttpClient.h"
 #include "IWebSocketClient.h"

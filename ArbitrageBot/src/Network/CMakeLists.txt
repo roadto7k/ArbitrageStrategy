@@ -27,9 +27,11 @@ endif()
 # set(Boost_USE_STATIC_RUNTIME OFF)
 # set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-set(BOOST_ROOT "${CMAKE_SOURCE_DIR}/vcpkg/installed/x64-windows")
-set(BOOST_INCLUDEDIR "${BOOST_ROOT}/include")
-set(BOOST_LIBRARYDIR "${BOOST_ROOT}/lib")
+if (WIN32)
+    set(BOOST_ROOT "${CMAKE_SOURCE_DIR}/vcpkg/installed/x64-windows")
+    set(BOOST_INCLUDEDIR "${BOOST_ROOT}/include")
+    set(BOOST_LIBRARYDIR "${BOOST_ROOT}/lib")
+endif()
 
 find_package(Boost REQUIRED COMPONENTS filesystem system thread regex random)
 find_package(OpenSSL REQUIRED)
@@ -41,23 +43,25 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(websocketpp)
 
-set(WEBSOCKETPP_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/websocketpp-src")
+if (WIN32)
+    set(WEBSOCKETPP_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/websocketpp-src")
 
-execute_process(
-    COMMAND ${CMAKE_COMMAND} .
-    WORKING_DIRECTORY ${WEBSOCKETPP_SOURCE_DIR}
-)
 
-execute_process(
-    COMMAND ${CMAKE_COMMAND} --build .
-    WORKING_DIRECTORY ${WEBSOCKETPP_SOURCE_DIR}
-)
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} .
+        WORKING_DIRECTORY ${WEBSOCKETPP_SOURCE_DIR}
+    )
 
-execute_process(
-    COMMAND ${CMAKE_COMMAND} --install .
-    WORKING_DIRECTORY ${WEBSOCKETPP_SOURCE_DIR}
-)
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} --build .
+        WORKING_DIRECTORY ${WEBSOCKETPP_SOURCE_DIR}
+    )
 
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} --install .
+        WORKING_DIRECTORY ${WEBSOCKETPP_SOURCE_DIR}
+    )
+endif()
 # if (NOT WEBSOCKETPP_INSTALL_RESULT EQUAL 0)
 #     message(FATAL_ERROR "L'installation de websocketpp a échoué.")
 # endif()
@@ -70,12 +74,21 @@ set(boost_dir "${Boost_INCLUDE_DIRS}/boost")
 set(open_ssl_dir "${Boost_INCLUDE_DIRS}/openssl")
 message(STATUS "BIIIIIIITE")
 message(STATUS ${open_ssl_dir})
+
 target_include_directories(NetworkLib PUBLIC ${boost_dir} ${open_ssl_dir})
 target_link_directories(NetworkLib PUBLIC ${open_ssl_dir})
 target_link_libraries(NetworkLib PUBLIC Boost::system Boost::thread Boost::regex Boost::random OpenSSL::SSL OpenSSL::Crypto)
 set(WEBSOCKETPP_INCLUDE_DIR "${websocketpp_SOURCE_DIR}/install/include")
+if (WIN32)
+    set(WEBSOCKETPP_INCLUDE_DIR "${websocketpp_SOURCE_DIR}/install/include")
+    target_include_directories(NetworkLib PRIVATE ${websocketpp_SOURCE_DIR}install/include/websocketpp)
+else()
+message(STATUS ${websocketpp_SOURCE_DIR})
+message(STATUS "...")
+    set(WEBSOCKETPP_INCLUDE_DIR "${websocketpp_SOURCE_DIR}")
+    target_include_directories(NetworkLib PRIVATE ${websocketpp_SOURCE_DIR})
+endif()
 target_include_directories(NetworkLib PUBLIC ${WEBSOCKETPP_INCLUDE_DIR})
-target_include_directories(NetworkLib PRIVATE ${websocketpp_SOURCE_DIR}install/include/websocketpp)
 message(STATUS "---------------------------------")
 message(STATUS ${WEBSOCKETPP_INCLUDE_DIR})
 message(STATUS ${boost_dir})

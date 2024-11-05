@@ -3,6 +3,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <thread>
 
 #include "IMarketDataProvider.h"
 #include "Http.h"

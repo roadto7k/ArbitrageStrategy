@@ -55,7 +55,7 @@ void simulatePriceUpdates(MarketDataProvider& provider) {
 int main() {
     try {
         auto httpClient = std::make_unique<CurlHttpClient>();
-        auto webSocketClient = std::make_unique<WebSocketClientWebSocketPP>("wss://stream.binance.com:9443/ws/");
+        auto webSocketClient = std::make_unique<WebSocketClientWebSocketPP>("wss://stream.binance.com/ws/btcusdt@bookTicker");
 
         std::cout << "Initializing NetworkManager" << std::endl;
         NetworkManager networkManager(std::move(httpClient), std::move(webSocketClient));

@@ -15,7 +15,25 @@ WebSocketClientWebSocketPP::WebSocketClientWebSocketPP(const std::string& uri)
     // Initialize websocketpp client
     client.init_asio();
     if (uri.substr(0, 6) == "wss://") {
-        client.set_tls_init_handler(std::bind(&WebSocketClientWebSocketPP::onTlsInit, this, std::placeholders::_1));
+        client.set_tls_init_handler([this](websocketpp::connection_hdl) {
+            auto ctx = websocketpp::lib::make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::tlsv12);
+            try {
+                ctx->set_options(boost::asio::ssl::context::default_workarounds |
+                                 boost::asio::ssl::context::no_sslv2 |
+                                 boost::asio::ssl::context::no_sslv3 |
+                                 boost::asio::ssl::context::single_dh_use);
+
+                // Désactiver la vérification pour les tests uniquement (ne pas utiliser en production)
+                ctx->set_verify_mode(boost::asio::ssl::verify_none);
+
+                // Activer la vérification dans un environnement sécurisé
+                // ctx->set_verify_mode(boost::asio::ssl::verify_peer);
+                // ctx->set_default_verify_paths();  // ou spécifier un fichier PEM manuellement si nécessaire
+            } catch (std::exception& e) {
+                std::cerr << "Error in TLS initialization: " << e.what() << std::endl;
+            }
+            return ctx;
+        });
     }
 
     client.set_open_handler([this](websocketpp::connection_hdl hdl) { onOpen(hdl); });

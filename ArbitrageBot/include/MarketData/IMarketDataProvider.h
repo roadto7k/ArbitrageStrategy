@@ -1,6 +1,6 @@
 #pragma once
 #include "IPriceSubscriber.h"
-#include "String.h"
+#include <string>
 #include "IAPI.h"
 
 class IMarketDataProvider : public IPriceSubscriber {
