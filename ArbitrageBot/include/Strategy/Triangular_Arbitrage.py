@@ -8,15 +8,17 @@ market_data = {}
 triangle_list = []
 pair_to_triangles = {}
 
+# Dictionary to store profitability for each triangle
+triangle_profitability = {}
+
 # Profit threshold to trigger a trading signal
 profit_threshold = 0.001
 
 # Queue to handle updates for currency pairs
 update_queue = deque()
 
-pairs_list = ["BTCETH", "ETHUSD", "USDBTC", "ETHSOL", "SOLBTC"] # pairs we watch
-wallet_currencies = ['BTC', 'ETH'] # What we have in our wallet ready to transfer
-
+pairs_list = ["BTCETH", "ETHUSD", "USDBTC", "ETHSOL", "SOLBTC"]  # pairs we watch
+wallet_currencies = ['BTC', 'ETH']  # What we have in our wallet ready to transfer
 
 
 def handle_market_data_update(pair, data):
@@ -151,14 +153,17 @@ def initialize_triangles(pairs_list, wallet_currencies=None):
     - pairs_list: List of available currency pairs.
     - wallet_currencies: List of currencies held in the wallet (optional).
     """
-    global triangle_list, pair_to_triangles
+    global triangle_list, pair_to_triangles, triangle_profitability
     triangle_list = generate_triangles(pairs_list, wallet_currencies)
     pair_to_triangles = {}
+    triangle_profitability = {}
     for triangle in triangle_list:
         for pair, _ in triangle:
             if pair not in pair_to_triangles:
                 pair_to_triangles[pair] = []
             pair_to_triangles[pair].append(triangle)
+        # Initialize profitability for each triangle
+        triangle_profitability[tuple(triangle)] = 0.0
 
 
 def is_triangle_valid(triangle):
@@ -229,6 +234,7 @@ def process_updates():
         for triangle in affected_triangles:
             if is_triangle_valid(triangle):
                 profit = calculate_arbitrage_opportunity(triangle)
+                triangle_profitability[tuple(triangle)] = profit  # Update profitability dictionary
                 if profit > profit_threshold:
                     trade_signal = generate_trade_signal(triangle)
                     # Here you can execute the trade or log the trade signal
@@ -243,6 +249,7 @@ async def main():
         pair, data = await receive_data_from_websocket()
         handle_market_data_update(pair, data)
         process_updates()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

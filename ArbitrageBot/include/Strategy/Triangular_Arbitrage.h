@@ -6,11 +6,13 @@
 #include <string>
 #include <algorithm>
 #include <cmath>
+#include <tuple>
 
 // Global data structures to store market data
 std::unordered_map<std::string, double> market_data;
 std::vector<std::vector<std::pair<std::string, std::string>>> triangle_list;
 std::unordered_map<std::string, std::vector<std::vector<std::pair<std::string, std::string>>>> pair_to_triangles;
+std::unordered_map<std::vector<std::pair<std::string, std::string>>, double> triangle_profitability;
 std::queue<std::string> update_queue;
 double profit_threshold = 0.001;
 
@@ -77,10 +79,13 @@ std::vector<std::vector<std::pair<std::string, std::string>>> generate_triangles
 void initialize_triangles(const std::vector<std::string>& pairs_list, const std::vector<std::string>& wallet_currencies) {
     triangle_list = generate_triangles(pairs_list, wallet_currencies);
     pair_to_triangles.clear();
+    triangle_profitability.clear();
     for (const auto& triangle : triangle_list) {
         for (const auto& pair : triangle) {
             pair_to_triangles[pair.first].push_back(triangle);
         }
+        // Initialize profitability for each triangle
+        triangle_profitability[triangle] = 0.0;
     }
 }
 
@@ -129,6 +134,7 @@ void process_updates() {
             for (const auto& triangle : affected_triangles->second) {
                 if (is_triangle_valid(triangle)) {
                     double profit = calculate_arbitrage_opportunity(triangle);
+                    triangle_profitability[triangle] = profit;  // Update profitability dictionary
                     if (profit > (1.0 + profit_threshold)) {
                         auto trade_signal = generate_trade_signal(triangle);
                         // Execute or log the trade signal here
