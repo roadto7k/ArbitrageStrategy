@@ -13,7 +13,7 @@ public:
 
 
     bool supportsWebSocket() const override {
-        return true;  // Binance supporte WebSocket
+        return true; 
     }
 
     void sendOrder(const Order& order) override;

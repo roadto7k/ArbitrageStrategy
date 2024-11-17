@@ -39,7 +39,9 @@ int main() {
         std::cerr << "Failed to get price: " << e.what() << std::endl;
     }
 
-    Order order(symbol, 0.1f, price, Order::Type::Market);
+    float amount = 0.1f;
+    Order::Type orderType = Order::Type::Market;
+    Order order = Order::createBuyOrder(symbol, amount, price, orderType);
     try {
         exchange->sendOrder(order);
         std::cout << "Order placed successfully!" << std::endl;

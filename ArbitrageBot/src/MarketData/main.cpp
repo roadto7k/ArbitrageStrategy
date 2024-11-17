@@ -55,14 +55,18 @@ void simulatePriceUpdates(MarketDataProvider& provider) {
 int main() {
     try {
         auto httpClient = std::make_unique<CurlHttpClient>();
+        // auto httpClient2 = std::make_unique<CurlHttpClient>();
         auto webSocketClient = std::make_unique<WebSocketClientWebSocketPP>("wss://stream.binance.com/ws/btcusdt@bookTicker");
-
+        auto webSocketClient2 = std::make_unique<WebSocketClientWebSocketPP>("wss://stream.binance.com/ws/ethusdt@bookTicker");
         std::cout << "Initializing NetworkManager" << std::endl;
-        NetworkManager networkManager(std::move(httpClient), std::move(webSocketClient));
+        NetworkManager networkManager("BTCUSDT", std::move(httpClient), std::move(webSocketClient));
 
+        networkManager.addWebSocketClient("ETHUSDT", std::move(webSocketClient2));
+
+        // NetworkManager networkManagerETHUSDT2("ETHUSDT", std::move(httpClient2), std::move(webSocketClient2));
         std::cout << "Initializing BinanceAPI" << std::endl;
-        BinanceAPI binanceAPI(networkManager);
-
+        // BinanceAPI binanceAPI(networkManager);
+        // BinanceAPI binanceAPI2(networkManager2);
         std::cout << "Getting cache" << std::endl;
         MarketDataCache cache;
 
@@ -76,19 +80,22 @@ int main() {
         std::string symbol2 = "ETHUSDT";
         
         std::cout << "Subscribing to BTC and ETH" << std::endl;
-        provider.subscribe(symbol1, &displaySubscriber, &binanceAPI);
-        provider.subscribe(symbol2, &displaySubscriber, &binanceAPI);
+        std::shared_ptr<IAPI> ptr_binanceAPI = std::make_shared<BinanceAPI>(networkManager);
 
-        // Garder le programme actif pour écouter les mises à jour WebSocket
-        std::this_thread::sleep_for(std::chrono::seconds(5)); // Garder actif pendant 5 minutes
+        provider.subscribe(symbol1, &displaySubscriber, ptr_binanceAPI);
+        provider.subscribe(symbol2, &displaySubscriber, ptr_binanceAPI);
+
+        std::this_thread::sleep_for(std::chrono::seconds(5));
 
         std::cout << "Fetching cached prices..." << std::endl;
         std::cout << "Cached price for " << symbol1 << ": " << cache.getPrice(symbol1) << std::endl;
         std::cout << "Cached price for " << symbol2 << ": " << cache.getPrice(symbol2) << std::endl;
+
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
     
+    std::cout << "wow" << std::endl;
     int a=0;
     while(a != 1) {
         std::cin >> a;

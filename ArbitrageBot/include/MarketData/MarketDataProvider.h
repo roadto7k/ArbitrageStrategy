@@ -4,6 +4,7 @@
 #include <set>
 #include <vector>
 #include <thread>
+#include <memory>
 
 #include "IMarketDataProvider.h"
 #include "Http.h"
@@ -18,7 +19,7 @@ public:
         return instance;
     }
 
-    void subscribe(const std::string& symbol, IPriceSubscriber* subscriber, IAPI* api) {
+    void subscribe(const std::string& symbol, IPriceSubscriber* subscriber, std::shared_ptr<IAPI> api) {
         subscribers[symbol].push_back(subscriber);
         if (api->supportsWebSocket()) {
             api->subscribeToWebSocket(symbol, this);
@@ -48,9 +49,9 @@ private:
         }
     }
 
-    void startHttpPolling(const std::string& symbol, IAPI* api) {
+    void startHttpPolling(const std::string& symbol, std::shared_ptr<IAPI> api) {
         std::thread([this, symbol, api]() {
-            while (true) {
+            while (true) { 
                 float price = api->getPrice(symbol); 
                 this->onPriceUpdate(symbol, price);  
                 std::this_thread::sleep_for(std::chrono::seconds(10)); 

@@ -7,23 +7,30 @@
 #include "MockClients.h" 
 class NetworkManager {
 public:
-    NetworkManager() 
-        : httpClient(std::make_unique<MockHttpClient>()),
-          webSocketClient(std::make_unique<MockWebSocketClient>()) {
-        std::cout << "NetworkManager created with mocks (MockHttpClient and MockWebSocketClient)" << std::endl;
+    NetworkManager() {
+        std::cout << "NetworkManager created with empty maps." << std::endl;
     }
 
-    NetworkManager(std::unique_ptr<HttpClient> httpClient, std::unique_ptr<IWebSocketClient> webSocketClient);
+    NetworkManager(const std::string& key, std::unique_ptr<HttpClient> httpClient, std::unique_ptr<IWebSocketClient> webSocketClient) {
+        addHttpClient(key, std::move(httpClient));
+        addWebSocketClient(key, std::move(webSocketClient));
+    }
 
-    HttpResponse makeHttpRequest(const HttpRequest& request);
+    void addHttpClient(const std::string& key, std::unique_ptr<HttpClient> client);
+
+    void addWebSocketClient(const std::string& key, std::unique_ptr<IWebSocketClient> client);
+
+    HttpResponse makeHttpRequest(const std::string& key, const HttpRequest& request);
 
     void connectWebSocket(const std::string& symbol, IWebSocketObserver* observer);
 
-    void setHttpTimeout(int milliseconds);
-    void setHttpRetryPolicy(int retries);
-    void setWebSocketReconnectPolicy(bool enableAutoReconnect);
+    void setHttpTimeout(const std::string& key, int milliseconds);
+
+    void setHttpRetryPolicy(const std::string& key, int retries);
+
+    void setWebSocketReconnectPolicy(const std::string& key, bool enableAutoReconnect);
 
 private:
-    std::unique_ptr<HttpClient> httpClient; 
-    std::unique_ptr<IWebSocketClient> webSocketClient;
+    std::map<std::string, std::unique_ptr<HttpClient>> httpClients;
+    std::map<std::string, std::unique_ptr<IWebSocketClient>> webSocketClients;
 };

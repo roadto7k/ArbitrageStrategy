@@ -12,7 +12,7 @@ public:
     void onMessageReceived(const std::string& message) override {
         try {
             auto json = JsonParser::parse(message);
-
+            
             if (json.contains("stream") && json.contains("data")) {
                 auto data = json["data"];
                 processMessage(data);
@@ -34,8 +34,9 @@ private:
     IPriceSubscriber* provider;
 
     void processMessage(const nlohmann::json& json) {
-        if (json.contains("p")) {
-            float price = JsonParser::getValue<float>(json, "p", 0.0f);
+        if (json.contains("b")) {
+            auto truc = JsonParser::getValue<std::string>(json, "b", "");
+            float price = std::stod(JsonParser::getValue<std::string>(json, "b", ""));
             provider->onPriceUpdate(symbol, price);
         } else {
             std::cerr << "Price field 'p' not found in the message." << std::endl;

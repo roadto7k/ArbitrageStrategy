@@ -25,6 +25,7 @@ endif()
 if (NOT TARGET ExchangeAPILib)
     add_subdirectory(../ExchangeAPI ExchangeAPILib)
 endif()
+
 add_library(MarketDataLib INTERFACE)
 
 target_include_directories(MarketDataLib INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/../../include/MarketData)
