@@ -39,7 +39,7 @@ find_package(OpenSSL REQUIRED)
 FetchContent_Declare(
     websocketpp
     GIT_REPOSITORY https://github.com/zaphoyd/websocketpp.git
-    GIT_TAG master
+    GIT_TAG develop
 )
 FetchContent_MakeAvailable(websocketpp)
 
