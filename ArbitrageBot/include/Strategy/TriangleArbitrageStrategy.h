@@ -1,9 +1,12 @@
+#ifndef TRIANGLE_ARBITRAGE_STRATEGY_H
+#define TRIANGLE_ARBITRAGE_STRATEGY_H
 #include "Istrategy.h"
 #include <string>
 #include <vector>
 #include <map>
 #include <memory>
-#include "OrderCommand.h"
+#include "JsonParser.h"
+// #include "OrderCommand.h"
 
 class TriangleArbitrageStrategy : public IStrategy {
 public:
@@ -50,3 +53,5 @@ private:
         return price1 * price2 * price3 - 1.0f;
     }
 };
+
+#endif
