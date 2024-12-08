@@ -42,3 +42,7 @@ target_link_libraries(ArbitrageEngineLib INTERFACE MarketDataLib StrategyLib Exc
 add_executable(TEST_ARBITRAGE main.cpp)
 
 target_link_libraries(TEST_ARBITRAGE ArbitrageEngineLib)
+
+add_executable(TEST_V2ARBITRAGE main_trianglegen.cpp)
+
+target_link_libraries(TEST_V2ARBITRAGE ArbitrageEngineLib)

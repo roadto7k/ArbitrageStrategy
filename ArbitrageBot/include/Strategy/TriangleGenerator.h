@@ -78,7 +78,18 @@ private:
     };
 
     std::pair<std::string, std::string> parsePair(const std::string& pair) const {
-        return {pair.substr(0, 3), pair.substr(3, 3)};
+        static const std::set<std::string> knownCurrencies = {"BTC", "ETH", "BNB", "USDT", "SOL", "ADA", "DOT", "DOGE"};
+
+        for (const auto& base : knownCurrencies) {
+            if (pair.rfind(base, 0) == 0) {
+                std::string quote = pair.substr(base.size());
+                if (knownCurrencies.count(quote)) {
+                    return {base, quote};
+                }
+            }
+        }
+
+        throw std::invalid_argument("Unknown pair format: " + pair);
     }
 };
 

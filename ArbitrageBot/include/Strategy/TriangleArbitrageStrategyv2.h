@@ -5,13 +5,15 @@
 #include <vector>
 #include <optional>
 #include "TriangleGenerator.h"
+#include "Istrategy.h"
+#include <nlohmann/json.hpp>
 
-class TriangleArbitrageStrategy {
+class TriangleArbitrageStrategy : public IStrategy {
 public:
     TriangleArbitrageStrategy(float threshold)
         : profitThreshold(threshold), profit(0.0f) {}
 
-    bool evaluate(const std::map<std::string, float>& priceCache, const std::vector<TriangleGenerator::Triangle>& triangles) {
+    bool evaluate(const std::map<std::string, float>& priceCache, const std::vector<TriangleGenerator::Triangle>& triangles) override {
         for (const auto& triangle : triangles) {
             if (isTriangleValid(triangle, priceCache)) {
                 float currentProfit = calculateProfit(triangle, priceCache);
@@ -23,6 +25,24 @@ public:
             }
         }
         return false;
+    }
+
+    std::string generateActions() const override {
+        if (!selectedTriangle) return "{}";
+        const auto& triangle = *selectedTriangle;
+
+        nlohmann::json actions = {
+            {"type", "triangle_arbitrage"},
+            {"pairs", {triangle.pair1, triangle.pair2, triangle.pair3}},
+            {"expected_profit", profit},
+            {"orders", {
+                {{"type", "buy"}, {"symbol", triangle.pair1}, {"amount", 100}},
+                {{"type", "sell"}, {"symbol", triangle.pair2}, {"amount", 100}},
+                {{"type", "sell"}, {"symbol", triangle.pair3}, {"amount", 100}}
+            }}
+        };
+
+        return actions.dump();
     }
 
     void printSelectedTriangle() const {

@@ -106,7 +106,7 @@ void WebSocketClientWebSocketPP::onClose(websocketpp::connection_hdl hdl) {
 
 void WebSocketClientWebSocketPP::onMessage(websocketpp::connection_hdl hdl, Client::message_ptr msg) {
     std::string message = msg->get_payload();
-    std::cout << "Message received: " << message << std::endl;
+    // std::cout << "Message received: " << message << std::endl;
     notifyObservers(message);
 }
 
